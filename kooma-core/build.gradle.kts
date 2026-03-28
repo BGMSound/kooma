@@ -1,4 +1,4 @@
-import org.jreleaser.model.Signing
+import org.jreleaser.model.Active
 import java.time.Year
 
 plugins {
@@ -47,9 +47,6 @@ publishing {
     }
 }
 
-val gpgSecret = project.findProperty("gpg.secret").toString()
-val gpgPassphrase = project.findProperty("gpg.passphrase").toString()
-
 jreleaser {
     gitRootSearch = true
     deploy {
@@ -59,25 +56,19 @@ jreleaser {
                     url = "https://central.sonatype.com/api/v1/publisher"
                     applyMavenCentralRules = true
 
-                    username = System.getenv("MAVEN_CENTRAL_USERNAME")
-                    password = System.getenv("MAVEN_CENTRAL_PASSWORD")
-
                     stagingRepository("target/staging-deploy")
                 }
             }
         }
     }
     signing {
-        pgp {
-            mode = Signing.Mode.MEMORY
-            secretKey = gpgSecret
-            passphrase = gpgPassphrase
-        }
+        active = Active.ALWAYS
     }
     release {
         github {
             repoOwner = property("project.developer.id").toString()
             repoUrl = property("project.name").toString()
+            token = System.getenv("JRELEASER_GITHUB_TOKEN")
         }
     }
 }
