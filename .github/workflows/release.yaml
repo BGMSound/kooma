@@ -33,7 +33,7 @@ jobs:
           echo "JRELEASER_GPG_PUBLIC_KEY=\"\"\"$GPG_PUBLIC\"\"\"\n" >> .jreleaser/config.toml
           echo "JRELEASER_GPG_SECRET_KEY=\"\"\"$GPG_SECRET\"\"\"\n" >> .jreleaser/config.toml
           
-          ./graledw --stacktrace jreleaserConfig
+          ./gradlew --stacktrace jreleaserConfig
           ./gradlew --stacktrace clean
           ./gradlew --stacktrace build
           ./gradlew --stacktrace publish
