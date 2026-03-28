@@ -28,7 +28,6 @@ jobs:
           echo "gpg.secret=$GPG_SECRET" >> gradle.properties
           echo "gpg.passphrase=$GPG_PASSPHRASE" >> gradle.properties
           
-          ./gradlew --stacktrace jreleaserConfig
           ./gradlew --stacktrace clean
           ./gradlew --stacktrace build
           ./gradlew --stacktrace publish
