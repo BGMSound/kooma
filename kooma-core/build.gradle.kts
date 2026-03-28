@@ -51,6 +51,7 @@ val gpgSecret = project.findProperty("gpg.secret").toString()
 val gpgPassphrase = project.findProperty("gpg.passphrase").toString()
 
 jreleaser {
+    gitRootSearch = true
     deploy {
         maven {
             mavenCentral {
