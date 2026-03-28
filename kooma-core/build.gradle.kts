@@ -78,7 +78,6 @@ jreleaser {
         github {
             repoOwner = property("project.developer.id").toString()
             repoUrl = property("project.name").toString()
-            token = System.getenv("REPOSITORY_PAT")
         }
     }
 }
