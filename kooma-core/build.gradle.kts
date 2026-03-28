@@ -4,6 +4,12 @@ import java.time.Year
 plugins {
     id("org.jreleaser") version "1.23.0"
     `maven-publish`
+    `java-library`
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 publishing {
@@ -39,7 +45,7 @@ publishing {
                     developerConnection = "scm:git:ssh://git@github.com/${property("project.developer.id")}"
                 }
             }
-            from(components["kotlin"])
+            from(components["java"])
         }
     }
     repositories {
@@ -53,10 +59,10 @@ jreleaser {
         maven {
             mavenCentral {
                 register("sonatype") {
-                    url = "https://central.sonatype.com/api/v1/publisher"
+                    active = Active.ALWAYS
+                    url = "https://central.sonatype.com/api/v1/publisher?publishing=automatic"
                     applyMavenCentralRules = true
-
-                    stagingRepository("target/staging-deploy")
+                    stagingRepository("build/staging-deploy")
                 }
             }
         }
@@ -68,6 +74,7 @@ jreleaser {
         github {
             repoOwner = property("project.developer.id").toString()
             repoUrl = property("project.name").toString()
+            releaseName = "v${property("project.version").toString()}"
             token = System.getenv("JRELEASER_GITHUB_TOKEN")
         }
     }

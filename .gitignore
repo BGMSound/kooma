@@ -1,7 +1,6 @@
 .gradle
 .idea
 .kotlin
-.jreleaser
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
