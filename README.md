@@ -4,7 +4,7 @@
 [![Apache 2.0 license](https://img.shields.io/badge/License-APACHE%202.0-green.svg?logo=APACHE&style=flat)](https://opensource.org/licenses/Apache-2.0)
 <br>
 Kooma is a Kotlin library for structured concurrency with virtual threads, inspired by coroutines.
-It wraps Java's StructuredTaskScope with a coroutine-style API, making concurrent code simpler and more expressive.
+It wraps Java's StructuredTaskScope with a kotlinx coroutine-style API, making concurrent code simpler and more expressive.
 
 ## Installation and Getting Started
 ### Installation
