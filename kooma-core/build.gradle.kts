@@ -56,3 +56,7 @@ mavenPublishing {
         }
     }
 }
+
+tasks.named("generateMetadataFileForMavenPublication") {
+    dependsOn(tasks.named("kotlinSourcesJar"))
+}
