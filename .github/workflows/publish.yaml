@@ -1,11 +1,6 @@
 name: publish
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - README.md
 concurrency:
   group: publish
 jobs:

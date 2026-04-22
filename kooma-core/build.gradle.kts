@@ -3,7 +3,6 @@ import com.vanniktech.maven.publish.SonatypeHost
 import java.time.Year
 
 plugins {
-    id("org.jreleaser") version "1.23.0"
     id("com.vanniktech.maven.publish") version "0.28.0"
     signing
     `maven-publish`
