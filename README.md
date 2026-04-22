@@ -116,6 +116,73 @@ If the `Deferred` is already complete when `asCompletableFuture()` is called, it
 Otherwise, the `CompletableFuture` completes at the same time the `Deferred` does.
 
 ---
+
+#### TaskContext
+
+Kooma supports TaskContext for propagating scoped values across virtual threads using Java's ScopedValue.
+Unlike ThreadLocal, bindings are automatically released when the scope exits and are safely inherited by child tasks without synchronization.
+
+##### Basic usage
+```kotlin
+val USER_ID = ScopedValue.newInstance<String>()
+val REQUEST_ID = ScopedValue.newInstance<String>()
+
+fun main() {
+    taskScope(context = taskContext { bind(USER_ID, "user-123") }) {
+        val result = async { USER_ID.get() }
+        println(result.await()) // "user-123"
+    }
+}
+```
+
+##### Multiple bindings
+```kotlin
+fun main() {
+    val ctx = taskContext {
+        bind(USER_ID, "user-123")
+        bind(REQUEST_ID, "req-456")
+    }
+
+    taskScope(context = ctx) {
+        val userId = async { USER_ID.get() }
+        val requestId = async { REQUEST_ID.get() }
+        println("${userId.await()} ${requestId.await()}") // "user-123 req-456"
+    }
+}
+```
+
+##### Combining contexts with +
+
+```kotlin
+fun main() {
+    val ctx = taskContext { bind(USER_ID, "user-123") } +
+              taskContext { bind(REQUEST_ID, "req-456") }
+
+    taskScope(context = ctx) {
+        val result = async { "${USER_ID.get()}-${REQUEST_ID.get()}" }
+        println(result.await()) // "user-123-req-456"
+    }
+}
+```
+
+##### Overriding context per task
+
+```kotlin
+fun main() {
+    taskScope(context = taskContext { bind(USER_ID, "parent") }) {
+        val a = async { USER_ID.get() } // "parent"
+        val b = async(context = taskContext { bind(USER_ID, "overridden") }) {
+            USER_ID.get() // "overridden"
+        }
+
+        println(a.await()) // "parent"
+        println(b.await()) // "overridden"
+    }
+}
+```
+
+
+---
 [[click to see more sample code]](https://github.com/BGMSound/kooma/tree/main/kooma-test)
 
 ## License

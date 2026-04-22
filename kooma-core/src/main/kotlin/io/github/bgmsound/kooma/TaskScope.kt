@@ -5,9 +5,9 @@ import java.time.Duration
 interface TaskScope : AutoCloseable {
     val isActive: Boolean get() = !Thread.currentThread().isInterrupted
 
-    fun launch(block: TaskScope.() -> Unit)
+    fun launch(context: TaskContext? = null, block: TaskScope.() -> Unit)
 
-     fun <T> async(block: TaskScope.() -> T): Deferred<T>
+    fun <T> async(context: TaskContext? = null, block: TaskScope.() -> T): Deferred<T>
 
     fun joinAll()
 

@@ -22,24 +22,30 @@ abstract class AbstractTaskScope<T: TaskScope>(
         name: String?
     ): TaskScope
 
-    override fun launch(block: TaskScope.() -> Unit) {
+    override fun launch(context: TaskContext?, block: TaskScope.() -> Unit) {
         getOrCreateInternalScope().fork(Callable {
-            newScope(timeout, threadFactory, name).use { scope ->
-                scope.block()
-                scope.joinAll()
+            val run: () -> Unit = {
+                newScope(timeout, threadFactory, name).use { scope ->
+                    scope.block()
+                    scope.joinAll()
+                }
             }
+            context?.runWith(run) ?: run()
         })
     }
 
-    override fun <T> async(block: TaskScope.() -> T): Deferred<T> {
+    override fun <T> async(context: TaskContext?, block: TaskScope.() -> T): Deferred<T> {
         val deferred = Deferred<T>()
         getOrCreateInternalScope().fork(Callable {
             try {
-                newScope(timeout, threadFactory, name).use { scope ->
-                    val result = scope.block()
-                    scope.joinAll()
-                    deferred.complete(result)
+                val run: () -> Unit = {
+                    newScope(timeout, threadFactory, name).use { scope ->
+                        val result = scope.block()
+                        scope.joinAll()
+                        deferred.complete(result)
+                    }
                 }
+                context?.runWith(run) ?: run()
             } catch (exception: Throwable) {
                 deferred.completeExceptionally(exception)
                 throw exception
