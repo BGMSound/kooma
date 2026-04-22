@@ -9,11 +9,6 @@ plugins {
     `java-library`
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
 signing {
     val gpgSecret = project.findProperty("gpg.secret").toString()
     val gpgPassphrase = project.findProperty("gpg.passphrase").toString()
@@ -55,8 +50,4 @@ mavenPublishing {
             developerConnection = "scm:git:ssh://git@github.com/${property("project.developer.id")}"
         }
     }
-}
-
-tasks.named("generateMetadataFileForMavenPublication") {
-    dependsOn(tasks.named("kotlinSourcesJar"))
 }
