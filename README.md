@@ -181,9 +181,45 @@ fun main() {
 }
 ```
 
+----
+
+## Behavior
+
+### Exception Behavior
+
+| Scope | Child failure | Behavior |
+|-------|--------------|----------|
+| `taskScope` | any task throws | remaining tasks cancelled, exception propagated |
+| `supervisorTaskScope` | any task throws | other tasks continue, exception surfaced on `await()` |
+| `asyncTaskScope` | any task throws | exception propagated to `Deferred.await()` |
+
+Timeout exceeded throws `StructuredTaskScope.TimeoutException` on `joinAll()`.
+
+----
+
+### Timeout
+
+`timeout` limits how long the scope waits for forked child tasks via `join()`.
+It does not apply to code running directly inside the scope block.
+
+```kotlin
+// ✅ timeout works — child task is forked
+taskScope(timeout = Duration.ofMillis(200)) {
+    async { sleep(1000); "too late" }
+}
+
+// ❌ timeout has no effect — no forked child
+taskScope(timeout = Duration.ofMillis(200)) {
+    sleep(1000) // runs to completion regardless of timeout
+}
+```
 
 ---
 [[click to see more sample code]](https://github.com/BGMSound/kooma/tree/main/kooma-test)
+
+## Requirements
+- JDK 21 or higher
+- Kotlin 2.x
 
 ## License
 kooma is Open Source software released under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0.html).
