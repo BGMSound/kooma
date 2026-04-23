@@ -30,12 +30,15 @@ class Deferred<T> {
     }
 
     fun asCompletableFuture(): CompletableFuture<T> {
-        return futureRef.updateAndGet { current ->
-            current ?: CompletableFuture<T>().apply {
-                outcome?.let { result ->
-                    result.fold({ complete(it) }, { completeExceptionally(it) })
-                }
-            }
+        val future = futureRef.updateAndGet { current ->
+            current ?: CompletableFuture<T>()
         }!!
+        outcome?.let { result ->
+            result.fold(
+                { future.complete(it) },
+                { future.completeExceptionally(it) }
+            )
+        }
+        return future
     }
 }
