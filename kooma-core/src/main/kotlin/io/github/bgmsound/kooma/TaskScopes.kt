@@ -69,7 +69,7 @@ fun <R> asyncTaskScope(
     return deferred
 }
 
-fun <R> asyncSupervisorScope(
+fun <R> asyncSupervisorTaskScope(
     context: TaskContext? = null,
     timeout: Duration? = null,
     threadFactory: ThreadFactory? = null,
