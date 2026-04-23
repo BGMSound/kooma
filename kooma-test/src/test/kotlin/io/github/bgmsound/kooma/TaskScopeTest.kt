@@ -90,4 +90,25 @@ class TaskScopeTest {
         // Sibling task should never reach the increment code due to cancellation
         assertEquals(0, siblingTaskFinished.get())
     }
+
+    @Test
+    fun `calling await multiple times should return the same result`() {
+        taskScope {
+            val deferred = async { sleep(100); 42 }
+            assertEquals(42, deferred.await())
+            assertEquals(42, deferred.await())
+            assertEquals(42, deferred.await())
+        }
+    }
+
+    @Test
+    fun `concurrent await calls should all return the same result`() {
+        taskScope {
+            val deferred = async { sleep(200); 42 }
+            val results = (1..10).map {
+                async { deferred.await() }
+            }
+            results.forEach { assertEquals(42, it.await()) }
+        }
+    }
 }

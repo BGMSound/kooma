@@ -30,8 +30,9 @@ class TimeoutTest {
     @Test
     fun `asyncTaskScope should throw when timeout is exceeded`() {
         val deferred = asyncTaskScope(timeout = Duration.ofMillis(200)) {
-            sleep(1000)
-            "too late"
+            launch {
+                sleep(1000)
+            }
         }
         assertThrows<StructuredTaskScope.TimeoutException> { deferred.await() }
     }

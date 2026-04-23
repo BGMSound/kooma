@@ -3,6 +3,22 @@ package io.github.bgmsound.kooma
 import java.time.Duration
 import java.util.concurrent.ThreadFactory
 
+private fun <R> runScoped(
+    scope: TaskScope,
+    block: TaskScope.() -> R
+): R {
+    return scope.use { scope ->
+        try {
+            val result = scope.block()
+            scope.joinAll()
+            result
+        } catch (exception: InterruptedException) {
+            scope.joinAll()
+            throw exception.cause ?: exception
+        }
+    }
+}
+
 fun <R> taskScope(
     context: TaskContext? = null,
     timeout: Duration? = null,
@@ -10,18 +26,7 @@ fun <R> taskScope(
     name: String? = null,
     block: TaskScope.() -> R
 ): R {
-    val run: () -> R = {
-        DefaultTaskScope(timeout, threadFactory, name).use { scope ->
-            try {
-                val result = scope.block()
-                scope.joinAll()
-                result
-            } catch (exception: InterruptedException) {
-                scope.joinAll()
-                throw exception.cause ?: exception
-            }
-        }
-    }
+    val run = { runScoped(DefaultTaskScope(timeout, threadFactory, name), block) }
     return context?.runWith(run) ?: run()
 }
 
@@ -32,20 +37,10 @@ fun <R> supervisorTaskScope(
     name: String? = null,
     block: TaskScope.() -> R
 ): R {
-    val run: () -> R = {
-        SupervisorTaskScope(timeout, threadFactory, name).use { scope ->
-            try {
-                val result = scope.block()
-                scope.joinAll()
-                result
-            } catch (exception: InterruptedException) {
-                scope.joinAll()
-                throw exception.cause ?: exception
-            }
-        }
-    }
+    val run = { runScoped(SupervisorTaskScope(timeout, threadFactory, name), block) }
     return context?.runWith(run) ?: run()
 }
+
 
 fun <R> asyncTaskScope(
     context: TaskContext? = null,
@@ -58,25 +53,16 @@ fun <R> asyncTaskScope(
     val deferred = Deferred<R>()
     (threadFactory ?: Thread.ofVirtual().factory()).newThread {
         try {
-            val run: () -> Unit = {
-                val scope = if (isSupervisor) {
-                    SupervisorTaskScope(timeout, threadFactory, name)
-                } else {
-                    DefaultTaskScope(timeout, threadFactory, name)
-                }
-                scope.use { scope ->
-                    try {
-                        val result = scope.block()
-                        scope.joinAll()
-                        deferred.complete(result)
-                    } catch (exception: InterruptedException) {
-                        scope.joinAll()
-                        throw exception.cause ?: exception
-                    }
-                }
+            println("timeout = $timeout")
+            if (isSupervisor) {
+                supervisorTaskScope(context, timeout, threadFactory, name, block)
+                    .let { deferred.complete(it) }
+            } else {
+                taskScope(context, timeout, threadFactory, name, block)
+                    .let { deferred.complete(it) }
             }
-            context?.runWith(run) ?: run()
         } catch (exception: Throwable) {
+            println("Async task scope failed: ${exception::class.java.name}")
             deferred.completeExceptionally(exception)
         }
     }.start()
