@@ -1,6 +1,6 @@
 package kooma.io.github.bgmsound.kooma
 
-import io.github.bgmsound.kooma.supervisorScope
+import io.github.bgmsound.kooma.supervisorTaskScope
 import io.github.bgmsound.kooma.taskScope
 import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.CompletionException
@@ -56,7 +56,7 @@ class CompletableFutureBridgeTest {
 
     @Test
     fun `if an exception occurs in Deferred, the CompletableFuture should complete exceptionally`() {
-        supervisorScope {
+        supervisorTaskScope {
             val deferred = async {
                 sleep(100)
                 throw IllegalStateException("Future Error")

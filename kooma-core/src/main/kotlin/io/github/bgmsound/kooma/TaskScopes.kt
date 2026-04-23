@@ -11,16 +11,21 @@ fun <R> taskScope(
     block: TaskScope.() -> R
 ): R {
     val run: () -> R = {
-        DefaultTaskScope(timeout, threadFactory, name).use {
-            val result = it.block()
-            it.joinAll()
-            return@use result
+        DefaultTaskScope(timeout, threadFactory, name).use { scope ->
+            try {
+                val result = scope.block()
+                scope.joinAll()
+                result
+            } catch (exception: InterruptedException) {
+                scope.joinAll()
+                throw exception.cause ?: exception
+            }
         }
     }
     return context?.runWith(run) ?: run()
 }
 
-fun <R> supervisorScope(
+fun <R> supervisorTaskScope(
     context: TaskContext? = null,
     timeout: Duration? = null,
     threadFactory: ThreadFactory? = null,
@@ -28,10 +33,15 @@ fun <R> supervisorScope(
     block: TaskScope.() -> R
 ): R {
     val run: () -> R = {
-        SupervisorTaskScope(timeout, threadFactory, name).use {
-            val result = it.block()
-            it.joinAll()
-            return@use result
+        SupervisorTaskScope(timeout, threadFactory, name).use { scope ->
+            try {
+                val result = scope.block()
+                scope.joinAll()
+                result
+            } catch (exception: InterruptedException) {
+                scope.joinAll()
+                throw exception.cause ?: exception
+            }
         }
     }
     return context?.runWith(run) ?: run()
@@ -55,9 +65,14 @@ fun <R> asyncTaskScope(
                     DefaultTaskScope(timeout, threadFactory, name)
                 }
                 scope.use { scope ->
-                    val result = scope.block()
-                    scope.joinAll()
-                    deferred.complete(result)
+                    try {
+                        val result = scope.block()
+                        scope.joinAll()
+                        deferred.complete(result)
+                    } catch (exception: InterruptedException) {
+                        scope.joinAll()
+                        throw exception.cause ?: exception
+                    }
                 }
             }
             context?.runWith(run) ?: run()

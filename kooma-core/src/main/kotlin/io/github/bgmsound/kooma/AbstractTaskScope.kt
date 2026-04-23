@@ -26,8 +26,13 @@ abstract class AbstractTaskScope<T: TaskScope>(
         getOrCreateInternalScope().fork(Callable {
             val run: () -> Unit = {
                 newScope(timeout, threadFactory, name).use { scope ->
-                    scope.block()
-                    scope.joinAll()
+                    try {
+                        scope.block()
+                        scope.joinAll()
+                    } catch (e: InterruptedException) {
+                        scope.joinAll()
+                        throw e
+                    }
                 }
             }
             context?.runWith(run) ?: run()
@@ -40,9 +45,14 @@ abstract class AbstractTaskScope<T: TaskScope>(
             try {
                 val run: () -> Unit = {
                     newScope(timeout, threadFactory, name).use { scope ->
-                        val result = scope.block()
-                        scope.joinAll()
-                        deferred.complete(result)
+                        try {
+                            val result = scope.block()
+                            scope.joinAll()
+                            deferred.complete(result)
+                        } catch (e: InterruptedException) {
+                            scope.joinAll()
+                            throw e
+                        }
                     }
                 }
                 context?.runWith(run) ?: run()

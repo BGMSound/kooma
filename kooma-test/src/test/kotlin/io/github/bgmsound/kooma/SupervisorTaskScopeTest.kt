@@ -1,6 +1,6 @@
 package kooma.io.github.bgmsound.kooma
 
-import io.github.bgmsound.kooma.supervisorScope
+import io.github.bgmsound.kooma.supervisorTaskScope
 import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
@@ -11,7 +11,7 @@ class SupervisorTaskScopeTest {
     fun `supervisorScope should allow sibling tasks to continue even if one fails`() {
         val siblingTaskFinished = AtomicInteger(0)
 
-        supervisorScope {
+        supervisorTaskScope {
             // Task 1: Fails after 100ms
             val failTask = async {
                 sleep(100)

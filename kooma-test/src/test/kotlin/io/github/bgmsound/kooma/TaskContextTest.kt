@@ -2,7 +2,7 @@ package kooma.io.github.bgmsound.kooma
 
 import io.github.bgmsound.kooma.TaskContextBuilder.Companion.taskContext
 import io.github.bgmsound.kooma.asyncTaskScope
-import io.github.bgmsound.kooma.supervisorScope
+import io.github.bgmsound.kooma.supervisorTaskScope
 import kotlin.test.Test
 import io.github.bgmsound.kooma.taskScope
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -80,7 +80,7 @@ class TaskContextTest {
             bind(USER_ID, "user-123")
         }
 
-        supervisorScope(context = ctx) {
+        supervisorTaskScope(context = ctx) {
             val failing = async {
                 sleep(100)
                 throw RuntimeException("oops")
